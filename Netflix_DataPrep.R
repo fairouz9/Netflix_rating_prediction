@@ -11,7 +11,14 @@ library(ggrepel)
 library(cowplot)
 
 ### Load the data
-setwd("/Users/mattiapiazza/Documents/University/Statistical Methods for High Dimensional Data/Project/Dataset")
+user = 'Theresa'
+if (user == 'Mattia'){
+  setwd("/Users/mattiapiazza/Documents/University/Statistical Methods for High Dimensional Data/Project/Dataset")
+}
+if (user == 'Theresa'){
+  setwd("/home/theresa/Schreibtisch/Theresa/STUDIUM/Master Statistics and Data Science/Padova/Statistical Methods for High-Dim Data/Project/Data")
+}
+
 data_raw = read.csv('titles.csv', header = TRUE)
 credits = read.csv("credits.csv", header=TRUE)
 
@@ -48,6 +55,9 @@ data_raw = data_raw %>%
 # Dividing our dataset in Movies and TV Shows
 data_mov <- select(data_raw[data_raw$type == "MOVIE", ], -c(seasons))
 data_sho <- data_raw[data_raw$type == "SHOW", ]
+
+write.csv(data_mov, file = 'data_movie.csv')
+write.csv(data_sho, file = 'data_show.csv')
 
 ##### FIRST IMPRESSIONS
 
@@ -285,7 +295,7 @@ ggplot(tmdb_plot_sho, aes(x = tmdb_plot_sho$tmdb_popularity, y = tmdb_plot_sho$t
   
   geom_point(data = tmdb_mean_plot_sho, aes(x = tmdb_mean_plot_sho$mean_tmdb_popularity_sho, y = c(as.integer(rownames(tmdb_mean_plot_sho)))), 
              color = "blue", size = 20*tmdb_mean_plot_sho$plot_sizes ) +
-  labs(title = "Average number of voting perTIMDB score for Shows", x = "Popularity", y = "TMDB Score") +
+  labs(title = "Average number of voting per TIMDB score for Shows", x = "Popularity", y = "TMDB Score") +
   # Zoomed view
   xlim(0, 500) +
   scale_y_continuous(breaks = c(1:10))
