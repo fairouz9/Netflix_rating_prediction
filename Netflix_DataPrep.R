@@ -9,18 +9,27 @@ library(dplyr)
 library(ggplot2)
 library(ggrepel)
 library(cowplot)
+library(corrplot)
+
 
 ### Load the data
-user = 'Theresa'
+user = 'Fairouz'
 if (user == 'Mattia'){
   setwd("/Users/mattiapiazza/Documents/University/Statistical Methods for High Dimensional Data/Project/Dataset")
 }
 if (user == 'Theresa'){
   setwd("/home/theresa/Schreibtisch/Theresa/STUDIUM/Master Statistics and Data Science/Padova/Statistical Methods for High-Dim Data/Project/Data")
 }
+if (user == 'Fairouz'){
+  setwd("C:/Users/fairouz/Desktop/statistical method project/dataset")
+}
 
 data_raw = read.csv('titles.csv', header = TRUE)
 credits = read.csv("credits.csv", header=TRUE)
+
+
+
+###Pre-processing 
 
 data_raw = data_raw %>%
   # remove redundant id variables
@@ -59,22 +68,22 @@ data_sho <- data_raw[data_raw$type == "SHOW", ]
 write.csv(data_mov, file = 'data_movie.csv')
 write.csv(data_sho, file = 'data_show.csv')
 
-##### FIRST IMPRESSIONS
+### FIRST IMPRESSIONS
 
-### Release year
+## Release year
 hist(data_raw$release_year, breaks = c(1945:2022), xlab = 'Year of Release', main = 'Year of release for movies and shows')
 
 hist(data_mov$release_year, breaks = c(1945:2022), xlab = 'Year of Release', main = 'Year of release for movies')
 hist(data_sho$release_year, breaks = c(1945:2022), xlab = 'Year of Release', main = 'Year of release for shows')
 
-### Types
+## Types
 table(data_raw$type)
 par(mfrow = c(1,2))
 boxplot(data_mov$runtime, xlab = 'Movies', ylab = 'run time', ylim = c(0,250))
 boxplot(data_sho$runtime, xlab = 'Shows', ylab = 'run time', ylim = c(0,250))
 par(mfrow = c(1,1))
 
-### Genres
+## Genres
 column_sums <- colSums(data_raw[, c(14:31)])
 genere_plot <- data.frame(
   column_names = names(column_sums),
@@ -88,16 +97,16 @@ ggplot(genere_plot, aes(x = column_names, y = column_sums)) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) + ggtitle('Distribution of genres')
 
-### Seasons
+## Seasons
 hist(data_sho$seasons, breaks = c(1:43), xlab = 'Number of seasons', main = 'Number of seasons for shows')
 
-### Runtime
+## Runtime
 par(mfrow = c(1, 2))
 boxplot(data_mov$runtime, xlab = "Movies runtime", ylab = "Minutes")
 boxplot(data_sho$runtime, xlab = "Shows runtime", ylab = "Minutes")
 par(mfrow = c(1, 1))
 
-### Age Certification
+## Age Certification
 ageCert_mov <- count(data.frame(age_certification = data_mov$age_certification), age_certification)
 
 ageCert_sho <- count(data.frame(age_certification = data_sho$age_certification), age_certification)
@@ -113,7 +122,7 @@ ggplot(ageCert_sho, aes(x = ageCert_sho$age_certification, y = ageCert_sho$n) ) 
 
 nrow = 2)
 
-### IMDB Scores 
+## IMDB Scores 
 par(mfrow = c(2, 2))
 boxplot(data_mov$imdb_score, xlab="Movies", ylab="IMDB Score", ylim = c(0,10))
 boxplot(data_sho$imdb_score, xlab="Shows", ylab="IMDB Score", ylim = c(0,10))
@@ -207,7 +216,7 @@ ggplot(imdb_plot_sho, aes(x = imdb_plot_sho$imdb_votes, y = imdb_plot_sho$imdb_s
   xlim(0, 300000) +
   scale_y_continuous(breaks = c(1:10))
 
-### TMDB Scores 
+## TMDB Scores 
 par(mfrow = c(2, 2))
 boxplot(data_mov$tmdb_score, xlab="Movies", ylab="TMDB Score", ylim = c(0,10))
 boxplot(data_sho$tmdb_score, xlab="Shows", ylab="IMDB Score", ylim = c(0,10))
@@ -301,6 +310,66 @@ ggplot(tmdb_plot_sho, aes(x = tmdb_plot_sho$tmdb_popularity, y = tmdb_plot_sho$t
   scale_y_continuous(breaks = c(1:10))
 
 
+###Correlation matrix
+
+#remove non-numerical features: description, genre, production_countries, type and title 
+data_mov_num <- data_mov %>% select(-c("title","description","genres","production_countries","type","age_certification"))
+data_sho_num <- data_sho %>% select(-c("title","description","genres","production_countries","type","age_certification"))
+
+#remove NA values from the numerical data-frames
+data_mov_num <- na.omit(data_mov_num)
+data_sho_num<- na.omit(data_sho_num)
+
+corr_matrix_mov<- cor(data_mov_num)
+corrplot_mov <- corrplot(corr_matrix_mov,
+                         method = "number",
+                         diag = TRUE,
+                         tl.cex = 0.4,
+                         number.cex = 0.5,
+                         tl.col = "black")
+
+corr_matrix_sho<- cor(data_sho_num)
+corrplot_sho <- corrplot(corr_matrix_sho,
+                         method = "number",
+                         diag = TRUE,
+                         tl.cex = 0.4,
+                         number.cex = 0.5,
+                         tl.col = "black")
+max(data_mov_num$imdb_votes)
+min(data_mov_num$imdb_votes)
 
 
+###Feature Scaling
+#normalizing out data might improve the correlation matrix....It did not 
+
+# Scale feature values using min/max scaling only for the votes and popularity 
+min_max_norm <- function(x) {(x - min(x)) / (max(x) - min(x))}
+
+data_mov_scaled <- data_mov_num %>%
+  mutate_at(.vars = c(4,5), .funs = list(min_max_norm))
+
+data_sho_scaled <- data_sho_num %>%
+  mutate_at(.vars = c(5,6), .funs = list(min_max_norm))
+
+#or using standardization 
+z_score_norm <- function(x) {
+  (x - mean(x, na.rm = TRUE)) / sd(x, na.rm = TRUE)}
+
+data_mov_scaled2<- data_mov_num %>%
+  mutate_at(.vars = c(4,5), .funs = list(z_score_norm))
      
+data_sho_scaled2<- data_sho_num %>%
+  mutate_at(.vars = c(5,6), .funs = list(z_score_norm))
+
+#using a custom scale to stay within [1,10]
+custom_scale <- function(x, new_min = 1, new_max = 10) {
+  old_min <- min(x, na.rm = TRUE)
+  old_max <- max(x, na.rm = TRUE)
+  scaled <- ((x - old_min) / (old_max - old_min)) * (new_max - new_min) + new_min
+  return(scaled)
+}
+data_mov_scaled3 <- data_mov_num %>%
+  mutate_at(.vars = c(4,5), .funs = list(~custom_scale(., new_min = 1, new_max = 10)))
+
+data_sho_scaled3 <- data_sho_num %>%
+  mutate_at(.vars = c(5,6), .funs = list(~custom_scale(., new_min = 1, new_max = 10)))
