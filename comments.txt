@@ -15,3 +15,19 @@ in order to draw the correlation matrix
 -I don't know if we are gonna scale all columns but when i used min-max scale on votes the vlues were too small since the max and min value of votes
  are pretty far from each other(2294231 and 5), so maybe we can use a custom scale to stay within 1 and 10 like the imdb scores
 -i did the scaling on the numerical dataframe, we can apply it to the original df after we decide on the factor features (including the ones with no certification)
+
+
+# Meeting January 28, 2023
+TODO's:
+- new category for 'NAs' in age certification
+
+Ideas: 
+- mixture of Lasso and ridge, ridge for genre, Elastic Net (Mattia?) (Comparisons, why does one work better than the others?)
+- LOESS (Fairouz), PCA and k-means, Random Forest (Louis)
+- Linear Model as starting point, maybe GLM as improvement (Theresa)
+- Scaling: try models with both scaled and unscaled features, only scale imdb votes, or scale everthing
+
+Notes:
+- use same seed for every model
+- models with or without tmdb score? Louis did some tests, no big difference for MSE
+
