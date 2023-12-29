@@ -22,7 +22,7 @@ TODO's:
 - new category for 'NAs' in age certification
 
 Ideas: 
-- mixture of Lasso and ridge, ridge for genre, Elastic Net (Mattia?) (Comparisons, why does one work better than the others?)
+- mixture of Lasso and ridge, ridge for genre, Elastic Net (Mattia) (Comparisons, why does one work better than the others?)
 - LOESS (Fairouz), PCA and k-means, Random Forest (Louis)
 - Linear Model as starting point, maybe GLM as improvement (Theresa)
 - Scaling: try models with both scaled and unscaled features, only scale imdb votes, or scale everthing
