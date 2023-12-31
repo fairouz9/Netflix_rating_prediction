@@ -13,7 +13,7 @@ library(corrplot)
 
 
 ### Load the data
-user = 'Fairouz'
+user = 'Theresa'
 if (user == 'Mattia'){
   setwd("/Users/mattiapiazza/Documents/University/Statistical Methods for High Dimensional Data/Project/Dataset")
 }

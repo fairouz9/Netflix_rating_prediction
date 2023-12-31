@@ -59,7 +59,8 @@ model_data_show <- select(train_show,-c(X,title, type,description, genres,produc
 model_data_show <- na.omit(model_data_show)
 x <- model.matrix(~.*., data = select(model_data_show, -c(imdb_score))) # no need to specify response, '.' means for every variable in the data set
 ridge_model1 <- cv.glmnet(x, na.omit(model_data_show$imdb_score), alpha = 0)
-
+plot(ridge_model1)
+summary(ridge_model1$glmnet.fit$beta)
 # Make predictions
 
 data_test_show <- select(test_show,-c(X,title, type,description, genres,production_countries))
@@ -71,3 +72,31 @@ predictions <- predict(ridge_model1, s = 'lambda.min', newx = x_test)
 # Evaluation
 mse_ridge1 <- mean((predictions - data_test_show$imdb_score)^2)
 mse_ridge1
+
+
+# Take a look at highest coefficients
+# Extract coefficients for the optimal lambda
+coef_optimal <- coef(ridge_model1)
+
+# Find the 15 largest coefficients
+top_coeffs <- data_frame(value <- as.data.frame(coef_optimal@x),name <- as.data.frame(coef_optimal@Dimnames[[1]][coef_optimal@i+1]))
+top_coeffs <- top_coeffs[-1,]
+top_indices <- order(abs(top_coeffs$`coef_optimal@x`), decreasing = TRUE)[1:15]
+top_variable_names <- top_coeffs$`coef_optimal@Dimnames[[1]][coef_optimal@i + 1]`[top_indices]
+top_coeff_values <- top_coeffs$`coef_optimal@x`[top_indices]
+
+# Create a data frame for plotting
+plot_data <- data.frame(
+  Variable = top_variable_names,
+  Coefficient = top_coeff_values
+)
+
+# Plot the 15 largest coefficients with positive in red and negatives in blue
+ggplot(plot_data, aes(x = Variable, y = Coefficient, fill = factor(sign(Coefficient)))) +
+  geom_bar(stat = "identity", color = "black") +
+  scale_fill_manual(values = c("blue", "red"), guide = FALSE) +
+  coord_flip() +
+  labs(title = "Top 15 Ridge Regression Coefficients",
+       x = "Variable",
+       y = "Coefficient") +
+  theme_minimal()
