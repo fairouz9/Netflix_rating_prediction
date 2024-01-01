@@ -25,7 +25,7 @@ if (user == 'Fairouz'){
 }
 
 data_raw = read.csv('titles.csv', header = TRUE)
-credits = read.csv("credits.csv", header=TRUE)
+#credits = read.csv("credits.csv", header=TRUE)
 
 
 
@@ -58,7 +58,8 @@ data_raw = data_raw %>%
          music = ifelse(grepl('music',genres), 1, 0),
          war = ifelse(grepl('war',genres), 1, 0),
          western = ifelse(grepl('western',genres), 1, 0)) %>%
-  mutate(isNotUS = ifelse(production_countries %in% c("['US']"), 0, 1))
+  mutate(isNotUS = ifelse(production_countries %in% c("['US']"), 0, 1)) #%>%
+  mutate(age_certification = ifelse(age_certification == '', NA, as.factor(age_certification)))
 
 
 # Dividing our dataset in Movies and TV Shows
