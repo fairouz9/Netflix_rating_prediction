@@ -49,6 +49,26 @@ To do on jan2 :
 -decide on next meeting 
 
 
+#meeting on january 1,2024
 
+progress:
+-we have 6 models in total: SVR, linear regression,PCA, random forest, ridge and elastic net (in further consideration)
 
+ideas:
+-we can mention using: scaling and no scaling  with tmdb and no tmdb 
+but as a  summary table, we can use without tmdb (without score and popularity) and with scaling (not the target), movies 
+-for presentation and paper:
+	-introduction: the main goal of our project ...louis
+	-dataset: explain the distribustion of our data, include some graphs...mattia
+	-data pre-processing: remove NAs, remove unique values, hot encoding for genre, categorical age certification to factor, scaling ...fairouz and theresa 
+	-correlation: include the matrices and briefly explain relations observed ...fairouz
+	-models: train,test split briefly explain model motivation, formation, parameters ...each his own
+	-results, observations (mention what extra stuff we did): in a table...theresa
+	-further considerations...together
 
+TO DO:
+-each send on group by tomorrow morning: choose the movies that we wanna use for "beat the model" game and don't include in  training set
+-each start writing his/her part in the presentation and paper 
+-theresa: send link for overleaf
+-For fairouz: write a explanation for the parameters used
+-thursday jan 4 at 11 
