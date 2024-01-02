@@ -3,7 +3,7 @@ please pull the file, and add your name and date when you add anything to it and
 and then we can discuss them when we meet 
 
 
-##fairouz- January 26,2023
+##fairouz- december 26,2023
 -I edited the section naming a bit 
 -we still had NAs, which i removed for both movie and show
 -I had to remove all non-numerical features including the factor feature (age_certification), 
@@ -17,7 +17,7 @@ in order to draw the correlation matrix
 -i did the scaling on the numerical dataframe, we can apply it to the original df after we decide on the factor features (including the ones with no certification)
 
 
-# Meeting January 28, 2023
+# Meeting december 28, 2023
 TODO's:
 - new category for 'NAs' in age certification
 
@@ -30,4 +30,25 @@ Ideas:
 Notes:
 - use same seed for every model
 - models with or without tmdb score? Louis did some tests, no big difference for MSE
+
+
+
+
+
+#fairouz, jan 1, 2024
+-I tried scaling for svr, didn't help much even though svr can be sensitive to scaling(I avoided scaling the target so i can compare it with unscaled)
+-I noticed svr was not predicting low scores at all, my theory is that we don't have enough data points with low scores
+ and those with low scores have few votings (check mattia's graph) 
+-do we consider these points as outliers?
+-i got less mse with tmdb by 0.2-0.3
+
+To do on jan2 :
+-go over the models 
+-write down layout for paper (sections)
+-choose template for power point and divide work
+-decide on next meeting 
+
+
+
+
 
