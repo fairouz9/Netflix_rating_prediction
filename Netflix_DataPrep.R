@@ -59,7 +59,7 @@ data_raw = data_raw %>%
          war = ifelse(grepl('war',genres), 1, 0),
          western = ifelse(grepl('western',genres), 1, 0)) %>%
   mutate(isNotUS = ifelse(production_countries %in% c("['US']"), 0, 1)) #%>%
-  mutate(age_certification = ifelse(age_certification == '', NA, as.factor(age_certification)))
+  #mutate(age_certification = ifelse(age_certification == '', NA, as.factor(age_certification)))
 
 
 # Dividing our dataset in Movies and TV Shows
