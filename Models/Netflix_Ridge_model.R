@@ -22,6 +22,7 @@ if (user == 'Theresa'){
 
 # data_show= read.csv('data_show.csv', header = TRUE)
 data_movie = read.csv("data_movie.csv", header=TRUE)
+data_movie <- na.omit(data_movie)
 
 ###### Analysis of single continuous components
 # Can we observe a linear trend?
@@ -86,25 +87,23 @@ random <- sample(1:nrow(data_movie_scaled), ceiling(0.8*dim(data_movie_scaled)[1
 train_movie <- data_movie_scaled[random,] 
 test_movie <- data_movie_scaled[-random,]
 
-model_data_movie <- na.omit(train_movie)
-x <- model.matrix(~.*., data = select(model_data_movie, -c(imdb_score))) # no need to specify response, '.' means for every variable in the data set
-ridge_model_scaled <- cv.glmnet(x, na.omit(model_data_movie$imdb_score), alpha = 0)
+x <- model.matrix(~.*., data = select(train_movie, -c(imdb_score))) # no need to specify response, '.' means for every variable in the data set
+ridge_model_scaled <- cv.glmnet(x, na.omit(train_movie$imdb_score), alpha = 0)
 plot(ridge_model_scaled)
 #summary(ridge_model_scaled$glmnet.fit$beta)
 
 ## Make predictions
-data_test_movie <- na.omit(test_movie)
-x_test <- model.matrix(~.*., data = select(data_test_movie, -c(imdb_score))) # no need to specify response, '.' means for every variable in the data set
+x_test <- model.matrix(~.*., data = select(test_movie, -c(imdb_score))) # no need to specify response, '.' means for every variable in the data set
 
 predictions <- predict(ridge_model_scaled, s = 'lambda.min', newx = x_test)
 
 ## Evaluation
-mse_ridge_scaled <- mean((predictions - data_test_movie$imdb_score)^2)
+mse_ridge_scaled <- mean((predictions - test_movie$imdb_score)^2)
 mse_ridge_scaled
 
 ## Plot fitted vs. true
 # Combine true and predicted values into a data frame
-plot_data <- data.frame(True = data_test_movie$imdb_score, Predicted = as.vector(predictions))
+plot_data <- data.frame(True = test_movie$imdb_score, Predicted = as.vector(predictions))
 
 # Calculate axis limits based on the range of true and predicted values
 limits <- range(c(plot_data$True, plot_data$Predicted))
@@ -159,3 +158,19 @@ ggplot(plot_data, aes(x = reorder(Variable, Coefficient), y = Coefficient, fill 
 
 
 ggsave('Plots/ridge_top15.pdf', height = 8, width = 10)
+
+## Data scaling
+data_movie_scaled <- data_movie %>%
+  select(-c(X,type,description,genres, production_countries, tmdb_popularity, tmdb_score)) %>%
+  mutate(release_year = scale(release_year),
+         runtime = scale(runtime),
+         imdb_votes = scale(imdb_votes)) %>%
+  mutate(age_certification = as.factor(age_certification))
+
+## Train-/Test-Split
+# set.seed(1234)
+# random <- sample(1:nrow(data_movie_scaled), ceiling(0.8*dim(data_movie_scaled)[1]))
+# test_movie <- data_movie_scaled[-random,]
+# 
+# test_set = test_movie[,c('title', 'imdb_score')]
+# test_set$predictions = predictions
