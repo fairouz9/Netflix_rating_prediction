@@ -169,3 +169,8 @@ test_movie <- data_movie_scaled[-random,]
 
 test_set = test_movie[,c('title', 'imdb_score')]
 test_set$predictions = predictions
+colnames(test_set) = c('title', 'true imdb_score', 'prediction')
+test_set$diff = abs(test_set$`true imdb_score` - test_set$prediction)
+
+film_selection <- c(12,95,136,359)
+possibleFilms = test_set[film_selection,]
