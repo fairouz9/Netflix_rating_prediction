@@ -20,9 +20,9 @@ if (user == 'Theresa'){
   setwd("/home/theresa/Schreibtisch/Theresa/STUDIUM/Master Statistics and Data Science/Padova/Statistical Methods for High-Dim Data/Project/Data")
 }
 
-# data_show= read.csv('data_show.csv', header = TRUE)
+data_movie_scaled = read.csv("data_movie_scaled.csv", header=TRUE)
 data_movie = read.csv("data_movie.csv", header=TRUE)
-data_movie <- na.omit(data_movie)
+data_movie = na.omit(data_movie)
 
 ###### Analysis of single continuous components
 # Can we observe a linear trend?
@@ -73,12 +73,9 @@ par(mfrow = c(1,1))
 ##################### Ridge Regression
 # Problem with Lasso: genres could be excluded. Solution: Ridge
 
-## Data scaling
-data_movie_scaled <- data_movie %>%
-  select(-c(X,title,type,description,genres, production_countries, tmdb_popularity, tmdb_score)) %>%
-  mutate(release_year = scale(release_year),
-         runtime = scale(runtime),
-         imdb_votes = scale(imdb_votes)) %>%
+## Data choice
+data_movie_scaled <- data_movie_scaled %>%
+  select(-c(X,title,type, tmdb_popularity, tmdb_score)) %>%
   mutate(age_certification = as.factor(age_certification))
 
 ## Train-/Test-Split
@@ -167,10 +164,8 @@ data_movie_scaled <- data_movie %>%
          imdb_votes = scale(imdb_votes)) %>%
   mutate(age_certification = as.factor(age_certification))
 
-## Train-/Test-Split
-# set.seed(1234)
-# random <- sample(1:nrow(data_movie_scaled), ceiling(0.8*dim(data_movie_scaled)[1]))
-# test_movie <- data_movie_scaled[-random,]
-# 
-# test_set = test_movie[,c('title', 'imdb_score')]
-# test_set$predictions = predictions
+## Compare predictions - table
+test_movie <- data_movie_scaled[-random,]
+
+test_set = test_movie[,c('title', 'imdb_score')]
+test_set$predictions = predictions
