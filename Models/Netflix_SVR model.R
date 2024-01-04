@@ -52,9 +52,9 @@ X_test_movie<- select(test_movie ,-c(imdb_score))
 y_test_movie<- test_movie$imdb_score
 
 
-random <- sample(1:nrow(data_show_num), ceiling(0.8*dim(data_show_num)[1]))
-train_show <- data_show_num[random,] 
-test_show <- data_show_num[-random,]
+random2 <- sample(1:nrow(data_show_num), ceiling(0.8*dim(data_show_num)[1]))
+train_show <- data_show_num[random2,] 
+test_show <- data_show_num[-random2,]
 X_train_show<- select(train_show ,-c(imdb_score))
 y_train_show<- train_show$imdb_score
 X_test_show<- select(test_show ,-c(imdb_score))

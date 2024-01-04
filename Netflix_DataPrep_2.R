@@ -13,7 +13,7 @@ library(corrplot)
 
 
 ### Load the data
-user = 'Theresa'
+user = 'Mattia'
 if (user == 'Mattia'){
   setwd("/Users/mattiapiazza/Documents/University/Statistical Methods for High Dimensional Data/Project/Dataset")
 }
@@ -31,7 +31,7 @@ data_raw = read.csv('titles.csv', header = TRUE)
 
 data_raw = data_raw %>%
   # remove redundant id variables
-  select(-c(id,imdb_id)) %>%
+  select(-c(id,imdb_id, tmdb_score, tmdb_popularity, description)) %>%
   # remove movies/films with no genre, country and year
   filter(genres !='[]' & production_countries != '[]') %>%
   # transform variables into factors
@@ -84,12 +84,14 @@ data_movie_scaled <- na.omit(data_movie_scaled)
 write.csv(data_movie_scaled, file = 'data_movie_scaled.csv')
 
 ## Train-/Test-Split
-set.seed(1234)
-random <- sample(1:nrow(data_movie_scaled), ceiling(0.8*dim(data_movie_scaled)[1]))
-train_movie <- data_movie_scaled[random,] 
-test_movie <- data_movie_scaled[-random,]
+# set.seed(1234)
+# random <- sample(1:nrow(data_movie_scaled), ceiling(0.8*dim(data_movie_scaled)[1]))
+# train_movie <- data_movie_scaled[random,] 
+# test_movie <- data_movie_scaled[-random,]
 
-### FIRST IMPRESSIONS
+########################################
+###        FIRST IMPRESSIONS         ###
+########################################
 
 ## Release year
 hist(data_raw$release_year, breaks = c(1945:2022), xlab = 'Year of Release', main = 'Year of release for movies and shows')
@@ -105,7 +107,7 @@ boxplot(data_sho$runtime, xlab = 'Shows', ylab = 'run time', ylim = c(0,250))
 par(mfrow = c(1,1))
 
 ## Genres
-column_sums <- colSums(data_raw[, c(14:31)])
+column_sums <- colSums(data_raw[, c(12:29)])
 genere_plot <- data.frame(
   column_names = names(column_sums),
   column_sums = column_sums
@@ -237,109 +239,23 @@ ggplot(imdb_plot_sho, aes(x = imdb_plot_sho$imdb_votes, y = imdb_plot_sho$imdb_s
   xlim(0, 300000) +
   scale_y_continuous(breaks = c(1:10))
 
-## TMDB Scores 
-par(mfrow = c(2, 2))
-boxplot(data_mov$tmdb_score, xlab="Movies", ylab="TMDB Score", ylim = c(0,10))
-boxplot(data_sho$tmdb_score, xlab="Shows", ylab="IMDB Score", ylim = c(0,10))
-boxplot(data_mov$tmdb_popularity, xlab="Movies", ylab="Popularity")
-boxplot(data_sho$tmdb_popularity, xlab="Shows", ylab="Popularity")
-par(mfrow = c(1,1))
 
-# TMDB sores (Movies + Shows)
-tmdb_plot <- data_raw[is.na(data_raw$tmdb_score) == 0 & is.na(data_raw$tmdb_popularity) == 0, c("tmdb_score", "tmdb_popularity")]
-
-# Average TMDB scores (Movie + Shows)
-num_tmdb_popularity <- matrix(nrow = 10)
-mean_tmdb_popularity <- matrix(nrow = 10)
-
-for (i in seq(1, 10, by=1)){
-  num_tmdb_popularity[i] <- sum(tmdb_plot[!is.na(tmdb_plot$tmdb_popularity) & tmdb_plot$tmdb_score > i-1 & tmdb_plot$tmdb_score <= i,]$tmdb_popularity)
-  mean_tmdb_popularity[i] <- mean(tmdb_plot[!is.na(tmdb_plot$tmdb_popularity) & tmdb_plot$tmdb_score > i-1 & tmdb_plot$tmdb_score <= i,]$tmdb_popularity)
-}
-tmdb_mean_plot <- data.frame(mean_tmdb_popularity, num_tmdb_popularity, plot_sizes = num_tmdb_popularity/max(num_tmdb_popularity) )
-tmdb_mean_plot <- tmdb_mean_plot[!is.na(tmdb_mean_plot$mean_tmdb_popularity) & !is.na(tmdb_mean_plot$num_tmdb_popularity),]
-
-
-# Plotting Time! 
-ggplot(tmdb_plot, aes(x = tmdb_plot$tmdb_popularity, y = tmdb_plot$tmdb_score)) +
-  geom_point(color = "orange") +
-  # Average Number of voting per TMDB score
-  geom_point(data = tmdb_mean_plot, 
-             aes(x = tmdb_mean_plot$mean_tmdb_popularity, y = c(as.integer(rownames(tmdb_mean_plot))) ),
-             color="red", size= 20*tmdb_mean_plot$plot_sizes) +
-  # Labels for the number of votes in each score range
-  #geom_label(data = tmdb_mean_plot, aes(x = tmdb_mean_plot$mean_tmdb_popularity, y = c(as.integer(rownames(imdb_mean_plot))), 
-  #            label = tmdb_mean_plot$num_tmdb_popularity), vjust = 0, hjust = -0.2) +
-  #geom_label_repel(data = tmdb_mean_plot, 
-  #                 aes(x = tmdb_mean_plot$mean_tmdb_popularity, y = c(as.integer(rownames(tmdb_mean_plot))) ),
-  #                 label = tmdb_mean_plot$lbl_tmdb_popularity,
-  #                 box.padding   = 0.5, point.padding = 0,
-  #                 segment.color = 'black') +
-  # Name of the graph and axis
-  labs(title ="Average number of voting per TMDB score", x = "Popularity", y = "TMDB Score") +
-  #Zoomed view
-  xlim(0, 500)
-  scale_y_continuous(name = "TMDB Score", breaks = seq(0, 10, by = 1))
-
-# TMDB Scores (Movies)
-tmdb_plot_mov <- data.frame(data_mov[!is.na(data_mov$tmdb_score) & !is.na(data_mov$tmdb_popularity),
-                                     c("tmdb_score", "tmdb_popularity")])
-# Average TMDB scores (Movies)
-num_tmdb_popularity_mov <- matrix(nrow = 10)
-mean_tmdb_popularity_mov <- matrix(nrow = 10)
-
-for (i in seq(1, 10, by=1)){
-  num_tmdb_popularity_mov[i] <- sum(tmdb_plot_mov[!is.na(tmdb_plot_mov$tmdb_popularity) & tmdb_plot_mov$tmdb_score > i-1 & tmdb_plot_mov$tmdb_score <= i,]$tmdb_popularity)
-  mean_tmdb_popularity_mov[i] <- mean(tmdb_plot_mov[!is.na(tmdb_plot_mov$tmdb_popularity) & tmdb_plot_mov$tmdb_score > i-1 & tmdb_plot_mov$tmdb_score <= i,]$tmdb_popularity)
-  #lbl_tmdb_popularity_mov[i] <- paste(i-0.99, i, sep = "-")
-}
-tmdb_mean_plot_mov <- data.frame(mean_tmdb_popularity_mov, num_tmdb_popularity_mov, plot_sizes = num_tmdb_popularity_mov/max(num_tmdb_popularity_mov))#, lbl_tmdb_popularity_mov)
-tmdb_mean_plot_mov <- tmdb_mean_plot_mov[!is.na(tmdb_mean_plot_mov$mean_tmdb_popularity_mov) & !is.na(tmdb_mean_plot_mov$num_tmdb_popularity_mov),]
-
-ggplot(tmdb_plot_mov, aes(x = tmdb_plot_mov$tmdb_popularity, y = tmdb_plot_mov$tmdb_score)) +
-  geom_point(color = "green") +
-  
-  geom_point(data = tmdb_mean_plot_mov, aes(x = tmdb_mean_plot_mov$mean_tmdb_popularity_mov, y = c(as.integer(rownames(tmdb_mean_plot_mov)))), 
-             color = "darkgreen", size = 20*tmdb_mean_plot_mov$plot_sizes ) +
-  labs(title = "Average number of voting per TMDB score for Movies", x = "Popularity", y = "TMDB Score") +
-  # Zoomed view
-  xlim(0, 500) +
-  scale_y_continuous(breaks = c(1:10))
-
-# TMDB Score (Shows)
-tmdb_plot_sho <- data.frame(data_sho[!is.na(data_sho$tmdb_score) & !is.na(data_sho$tmdb_popularity),
-                                     c("tmdb_score", "tmdb_popularity")])
-# Average TMDB scores (Shows)
-num_tmdb_popularity_sho <- matrix(nrow = 10)
-mean_tmdb_popularity_sho <- matrix(nrow = 10)
-
-for (i in seq(1, 10, by=1)){
-  num_tmdb_popularity_sho[i] <- sum(tmdb_plot_sho[!is.na(tmdb_plot_sho$tmdb_popularity) & tmdb_plot_sho$tmdb_score > i-1 & tmdb_plot_sho$tmdb_score <= i,]$tmdb_popularity)
-  mean_tmdb_popularity_sho[i] <- mean(tmdb_plot_sho[!is.na(tmdb_plot_sho$tmdb_popularity) & tmdb_plot_sho$tmdb_score > i-1 & tmdb_plot_sho$tmdb_score <= i,]$tmdb_popularity)
-}
-tmdb_mean_plot_sho <- data.frame(mean_tmdb_popularity_sho, num_tmdb_popularity_sho, plot_sizes = num_tmdb_popularity_sho/max(num_tmdb_popularity_sho))
-tmdb_mean_plot_sho <- tmdb_mean_plot_sho[!is.na(tmdb_mean_plot_sho$mean_tmdb_popularity_sho) & !is.na(tmdb_mean_plot_sho$num_tmdb_popularity_sho),]
-
-ggplot(tmdb_plot_sho, aes(x = tmdb_plot_sho$tmdb_popularity, y = tmdb_plot_sho$tmdb_score)) +
-  geom_point(color = "skyblue") +
-  
-  geom_point(data = tmdb_mean_plot_sho, aes(x = tmdb_mean_plot_sho$mean_tmdb_popularity_sho, y = c(as.integer(rownames(tmdb_mean_plot_sho)))), 
-             color = "blue", size = 20*tmdb_mean_plot_sho$plot_sizes ) +
-  labs(title = "Average number of voting per TIMDB score for Shows", x = "Popularity", y = "TMDB Score") +
-  # Zoomed view
-  xlim(0, 500) +
-  scale_y_continuous(breaks = c(1:10))
-
-
-###Correlation matrix
+########################################
+###        CORRELATION MATRIX        ###
+########################################
 
 #remove non-numerical features: description, genre, production_countries, type and title 
-data_mov_num <- data_mov %>% select(-c("title","description","genres","production_countries","type","age_certification"))
-data_sho_num <- data_sho %>% select(-c("title","description","genres","production_countries","type","age_certification"))
+data_mov_num <- data_mov %>% select(-c("title", "genres", "production_countries",
+                                       "type","age_certification"))
+data_sho_num <- data_sho %>% select(-c("title", "genres", "production_countries",
+                                       "type","age_certification"))
 
 #remove NA values from the numerical data-frames
 data_mov_num <- na.omit(data_mov_num)
 data_sho_num<- na.omit(data_sho_num)
+
+#write.csv(data_mov_num, file = 'data_movie_num.csv')
+#write.csv(data_mov_num, file = 'data_show_num.csv')
 
 corr_matrix_mov<- cor(data_mov_num)
 corrplot_mov <- corrplot(corr_matrix_mov,
@@ -358,39 +274,3 @@ corrplot_sho <- corrplot(corr_matrix_sho,
                          tl.col = "black")
 max(data_mov_num$imdb_votes)
 min(data_mov_num$imdb_votes)
-
-
-###Feature Scaling
-#normalizing out data might improve the correlation matrix....It did not 
-
-# Scale feature values using min/max scaling only for the votes and popularity 
-min_max_norm <- function(x) {(x - min(x)) / (max(x) - min(x))}
-
-data_mov_scaled <- data_mov_num %>%
-  mutate_at(.vars = c(4,5), .funs = list(min_max_norm))
-
-data_sho_scaled <- data_sho_num %>%
-  mutate_at(.vars = c(5,6), .funs = list(min_max_norm))
-
-#or using standardization 
-z_score_norm <- function(x) {
-  (x - mean(x, na.rm = TRUE)) / sd(x, na.rm = TRUE)}
-
-data_mov_scaled2<- data_mov_num %>%
-  mutate_at(.vars = c(4,5), .funs = list(z_score_norm))
-     
-data_sho_scaled2<- data_sho_num %>%
-  mutate_at(.vars = c(5,6), .funs = list(z_score_norm))
-
-#using a custom scale to stay within [1,10]
-custom_scale <- function(x, new_min = 1, new_max = 10) {
-  old_min <- min(x, na.rm = TRUE)
-  old_max <- max(x, na.rm = TRUE)
-  scaled <- ((x - old_min) / (old_max - old_min)) * (new_max - new_min) + new_min
-  return(scaled)
-}
-data_mov_scaled3 <- data_mov_num %>%
-  mutate_at(.vars = c(4,5), .funs = list(~custom_scale(., new_min = 1, new_max = 10)))
-
-data_sho_scaled3 <- data_sho_num %>%
-  mutate_at(.vars = c(5,6), .funs = list(~custom_scale(., new_min = 1, new_max = 10)))

@@ -72,3 +72,12 @@ TO DO:
 -theresa: send link for overleaf
 -For fairouz: write a explanation for the parameters used
 -thursday jan 4 at 11 
+
+
+january 3,2024
+reminders:
+-mention in the models section before talking about any of the models, the dataset we chose to use
+ie say that we studied our models' performances with tmdb and without, with scaling and without o movies and shows,
+but we cose to report the results with scaling without tmdb as a primary study  
+the full results can be accessed on the github page (add link) 
+-ask theresa what features she scaled so we all apply the same scalinggit
