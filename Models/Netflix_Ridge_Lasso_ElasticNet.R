@@ -45,6 +45,7 @@ random <- sample(1:nrow(data_movie), ceiling(0.8*dim(data_movie)[1]))
 train_movie <- data_movie[random,] 
 test_movie <- data_movie[-random,]
 
+
 ### Train
 
 data_train_movie <- train_movie %>% select(-c(X,title, type, genres,
@@ -52,23 +53,22 @@ data_train_movie <- train_movie %>% select(-c(X,title, type, genres,
 data_train_movie<- na.omit(data_train_movie)
 
 ## All Features
-x0 <- model.matrix(~., data = select(data_train_movie, -c(imdb_score)))
+x0 <- model.matrix(~., data = select(data_train_movie, -c('imdb_score')) )
 
 ## Group
-x1 <- model.matrix(~.*., data = select(data_train_movie, -c(imdb_score)))
+x1 <- model.matrix(~.*., data = select(data_train_movie, -c('imdb_score')))
 
 ## Best Correlation
-
 cor_imdb_score_movie <- as.data.frame(as.matrix(cor(data_movie_num)[,'imdb_score']))
 cor_imdb_score_movie <- cor_imdb_score_movie %>% filter(!rownames(.) %in% c('X', 'imdb_score'))
 
 fname <- rownames(cor_imdb_score_movie)
 mask <- abs(cor_imdb_score_movie) >= colMeans(abs(cor_imdb_score_movie))
 
-best_formula <- na.omit(as.formula(paste("imdb_score ~", paste(fname[mask], collapse = ' + ')) ))
+best_formula <- na.omit(as.formula(paste("~", paste(fname[mask], collapse = ' + ')) ))
 
 
-x2 <- model.matrix(best_formula, data = data_train_movie)
+x2 <- model.matrix(best_formula, data = select(data_train_movie, -c('imdb_score')))
 
 y <- data_train_movie$imdb_score 
 
@@ -311,6 +311,20 @@ ggplot(mse_movie, aes(x = mse_movie[, 'model'], y = mse_movie[, 'mse']) ) +
     y = 'MSE'
   )
 
+mask <- test_movie$title == 'Rambo'
+
+beat_the_model <- data.frame(name = c('Ridge_0', 'Ridge_1', 'Ridge_2',
+                                      'Lasso_0', 'Lasso_1', 'Lasso_2',
+                                      'ElasticNet_0', 'ElasticNet_1', 'ElasticNet_2', 
+                                      'IMDB Score'),
+                             pred = c(ridge_pred_movie_0[mask], ridge_pred_movie_1[mask], ridge_pred_movie_2[mask], 
+                                      lasso_pred_movie_0[mask], lasso_pred_movie_1[mask], lasso_pred_movie_2[mask], 
+                                      en_pred_movie_0[mask], en_pred_movie_1[mask], en_pred_movie_1[mask], 
+                                      y_test[mask]) )
+
+
+ggplot(beat_the_model, aes(x = name, y = pred)) +
+  geom_col(color = 'black', fill = 'purple')
 
 
 
