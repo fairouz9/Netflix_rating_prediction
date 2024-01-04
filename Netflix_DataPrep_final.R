@@ -13,7 +13,7 @@ library(corrplot)
 
 
 ### Load the data
-user = 'Mattia'
+user = 'Fairouz'
 if (user == 'Mattia'){
   setwd("/Users/mattiapiazza/Documents/University/Statistical Methods for High Dimensional Data/Project/Dataset")
 }
@@ -31,7 +31,7 @@ data_raw = read.csv('titles.csv', header = TRUE)
 
 data_raw = data_raw %>%
   # remove redundant id variables
-  select(-c(id,imdb_id, tmdb_score, tmdb_popularity, description)) %>%
+  select(-c(id,imdb_id, description)) %>% #when we removed tmdb and tmdb popularity, then omit NAs we obtained larger dimension
   # remove movies/films with no genre, country and year
   filter(genres !='[]' & production_countries != '[]') %>%
   # transform variables into factors
@@ -59,17 +59,19 @@ data_raw = data_raw %>%
   mutate(isNotUS = ifelse(production_countries %in% c("['US']"), 0, 1)) #%>%
   #mutate(age_certification = ifelse(age_certification == '', NA, as.factor(age_certification)))
 
+#why not omit NAs from data raw so we don't have to do it later steps 
 
 # Dividing our dataset in Movies and TV Shows
 data_mov <- select(data_raw[data_raw$type == "MOVIE", ], -c(seasons))
 data_sho <- data_raw[data_raw$type == "SHOW", ]
 
-write.csv(data_mov, file = 'data_movie.csv')
-write.csv(data_sho, file = 'data_show.csv')
+#write.csv(data_mov, file = 'data_movie.csv')
+#write.csv(data_sho, file = 'data_show.csv')
+
 
 # Insert scaling
 data_movie_scaled <- data_mov %>%
-  select(-c(type,description,genres, production_countries)) %>%
+  select(-c(type,genres, production_countries)) %>%
   mutate(release_year = scale(release_year),
          runtime = scale(runtime),
          imdb_votes = scale(imdb_votes),
@@ -244,15 +246,18 @@ ggplot(imdb_plot_sho, aes(x = imdb_plot_sho$imdb_votes, y = imdb_plot_sho$imdb_s
 ###        CORRELATION MATRIX        ###
 ########################################
 
+
+#remove NA values from the data-frames
+data_mov<- na.omit(data_mov)
+data_sho<- na.omit(data_sho)
+
 #remove non-numerical features: description, genre, production_countries, type and title 
 data_mov_num <- data_mov %>% select(-c("title", "genres", "production_countries",
                                        "type","age_certification"))
 data_sho_num <- data_sho %>% select(-c("title", "genres", "production_countries",
                                        "type","age_certification"))
 
-#remove NA values from the numerical data-frames
-data_mov_num <- na.omit(data_mov_num)
-data_sho_num<- na.omit(data_sho_num)
+
 
 #write.csv(data_mov_num, file = 'data_movie_num.csv')
 #write.csv(data_mov_num, file = 'data_show_num.csv')

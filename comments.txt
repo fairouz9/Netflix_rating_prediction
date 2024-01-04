@@ -103,3 +103,7 @@ TO DO:
 -formalize game 
 -decide on format for power point 
 -next meeting?
+
+new remarks:
+-NAs should be removed after we remove unique character features but not before removing tmdb sice in the full study we are studying with and without tmdb
+-in data prep, after mutating data raw, we should omit NAs so that we don't get warnings in plotting 
