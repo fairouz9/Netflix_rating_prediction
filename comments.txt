@@ -52,7 +52,7 @@ To do on jan2 :
 #meeting on january 1,2024
 
 progress:
--we have 6 models in total: SVR, linear regression,PCA, random forest, ridge and elastic net (in further consideration)
+-we have 4 models in total: SVR, random forest, ridge and elastic net 
 
 ideas:
 -we can mention using: scaling and no scaling  with tmdb and no tmdb 
@@ -80,4 +80,26 @@ reminders:
 ie say that we studied our models' performances with tmdb and without, with scaling and without o movies and shows,
 but we cose to report the results with scaling without tmdb as a primary study  
 the full results can be accessed on the github page (add link) 
--ask theresa what features she scaled so we all apply the same scalinggit
+-ask theresa what features she scaled so we all apply the same scaling
+
+
+
+
+Meeting on january 4, 2024
+
+Tasks:
+-for louis: you can add something small for PCA( readon why you think it doesn't perform well)
+-add final model in model file where we only include with scaling without tmbd 
+-add a note about the archive on the report 
+-mention in the models section before talking about any of the models, the dataset we chose to use
+ie say that we studied our models' performances with tmdb and without, with scaling and without o movies and shows,
+but we cose to report the results with scaling without tmdb as a primary study  
+the full results can be accessed on the github page (add link) 
+-also add test train split
+
+TO DO: 
+-proof-read the paper 
+-decide on a movie for game
+-formalize game 
+-decide on format for power point 
+-next meeting?
