@@ -27,8 +27,6 @@ if (user == 'Fairouz'){
 data_raw = read.csv('titles.csv', header = TRUE)
 #credits = read.csv("credits.csv", header=TRUE)
 
-
-
 ###Pre-processing 
 
 data_raw = data_raw %>%
@@ -68,6 +66,28 @@ data_sho <- data_raw[data_raw$type == "SHOW", ]
 
 write.csv(data_mov, file = 'data_movie.csv')
 write.csv(data_sho, file = 'data_show.csv')
+
+# Insert scaling
+data_movie_scaled <- data_mov %>%
+  select(-c(type,description,genres, production_countries)) %>%
+  mutate(release_year = scale(release_year),
+         runtime = scale(runtime),
+         imdb_votes = scale(imdb_votes),
+         tmdb_score = scale(tmdb_score),
+         tmdb_popularity = scale(tmdb_popularity)) %>%
+  mutate(age_certification = as.factor(age_certification))
+
+# Omit NAs
+data_movie_scaled <- na.omit(data_movie_scaled)
+
+# Save scaled data set
+write.csv(data_movie_scaled, file = 'data_movie_scaled.csv')
+
+## Train-/Test-Split
+set.seed(1234)
+random <- sample(1:nrow(data_movie_scaled), ceiling(0.8*dim(data_movie_scaled)[1]))
+train_movie <- data_movie_scaled[random,] 
+test_movie <- data_movie_scaled[-random,]
 
 ### FIRST IMPRESSIONS
 
