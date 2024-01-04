@@ -61,7 +61,6 @@ X_test_show<- select(test_show ,-c(imdb_score))
 y_test_show<- test_show$imdb_score
 
 
-
 ##FOR MOVIES  
 
 #without tmdb scores and popularity 
@@ -75,7 +74,7 @@ SVR_pred_movie <- predict(SVR_movie, X_test_movie)
 
 # Calculate MSE (Mean Squared Error)
 SVR_movie_mse <- mean((SVR_pred_movie - y_test_movie)^2)
-#~0.8469
+
 
 
 #visualize 
@@ -104,7 +103,7 @@ SVR_pred_movie2 <- predict(SVR_movie2, X_test_movie)
 
 # Calculate MSE (Mean Squared Error)
 SVR_movie_mse2 <- mean((SVR_pred_movie2 - y_test_movie)^2)
-#~0.5459
+
 
 #visualize 
 
@@ -227,7 +226,7 @@ SVR_pred_movie_scaled <- predict(SVR_movie_scaled, X_test_movie_scaled)
 
 # Calculate MSE (Mean Squared Error)
 SVR_movie_mse_scaled <- mean((SVR_pred_movie_scaled - y_test_movie_scaled)^2)
-#~0.8469
+
 
 
 #visualize 
@@ -255,7 +254,7 @@ SVR_pred_movie_scaled2 <- predict(SVR_movie_scaled2, X_test_movie_scaled)
 
 # Calculate RMSE (Root Mean Squared Error)
 SVR_movie_mse_scaled2 <- mean((SVR_pred_movie_scaled2 - y_test_movie_scaled)^2)
-#~0.5459
+
 
 #visualize 
 
@@ -285,7 +284,7 @@ SVR_pred_show_scaled <- predict(SVR_show_scaled, X_test_show_scaled)
 
 # Calculate MSE (Mean Squared Error)
 SVR_show_mse_scaled <- mean((SVR_pred_show_scaled - y_test_show_scaled)^2)
-#~0.8469
+
 
 
 #visualize 
@@ -313,7 +312,7 @@ SVR_pred_show_scaled2 <- predict(SVR_show_scaled2, X_test_show_scaled)
 
 # Calculate MSE (Mean Squared Error)
 SVR_show_mse_scaled2 <- mean((SVR_pred_show_scaled2 - y_test_show_scaled)^2)
-#~0.5459
+
 
 #visualize 
 

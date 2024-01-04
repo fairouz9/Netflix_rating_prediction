@@ -34,7 +34,9 @@ data_movie_scaled<- read.csv('data_movie_scaled.csv', header = TRUE)
 ##test-train split 
 set.seed(1234)
 
-data_movie_num_scaled<- data_movie_scaled %>% select(-c("X","title","type"))
+data_movie_num_scaled<- data_movie_scaled %>% select(-c("X","title","type"))%>%
+  mutate(age_certification = as.factor(age_certification))
+
 
 random <- sample(1:nrow(data_movie_num_scaled), ceiling(0.8*dim(data_movie_num_scaled)[1]))
 train_movie_scaled <- data_movie_num_scaled[random,] 
@@ -45,7 +47,7 @@ y_train_movie_scaled<- train_movie_scaled$imdb_score
 X_test_movie_scaled<- select(test_movie_scaled ,-c(imdb_score))
 y_test_movie_scaled<- test_movie_scaled$imdb_score
 
-
+#test<- data_movie_scaled[-random,]
 ###SVR with scaling and without tmdb features 
 SVR_movie_scaled <- svm(imdb_score~release_year + age_certification + runtime + imdb_votes + 
                           isNotUS + drama + comedy + documentation + horror + crime + 
@@ -56,20 +58,20 @@ SVR_pred_movie_scaled <- predict(SVR_movie_scaled, X_test_movie_scaled)
 
 # Calculate MSE (Mean Squared Error)
 
-SVR_movie_mse_scaled2 <- mean((SVR_pred_movie_scaled - y_test_movie_scaled)^2)
+SVR_movie_mse_scaled <- mean((SVR_pred_movie_scaled - y_test_movie_scaled)^2)
 #~0.789221
 
 
 #visualize 
 
 # Create a data frame with true and predicted values
-plot_data5 <- data.frame(Actual = y_test_movie_scaled, Predicted = SVR_pred_movie_scaled)
+plot_data_scaled <- data.frame(Actual = y_test_movie_scaled, Predicted = SVR_pred_movie_scaled)
 
 # Scatter plot
-ggplot(plot_data5, aes(x = Actual, y = Predicted)) +
+ggplot(plot_data_scaled, aes(x = Actual, y = Predicted)) +
   geom_point(color = "blue") +
   geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") +  # Add a line of perfect prediction
   labs(x = "True IMDb Scores", y = "Predicted IMDb Scores") +
-  ggtitle("SVR Predictions vs. True Values for movies, scaled without tmdb ")
+  ggtitle("SVR Predictions vs. True Values for movies")
 
 
