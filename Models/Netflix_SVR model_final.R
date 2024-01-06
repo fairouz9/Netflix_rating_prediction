@@ -25,17 +25,48 @@ if (user == 'Fairouz'){
 data_raw = read.csv('titles.csv', header = TRUE)
 data_movie = read.csv("data_movie.csv", header=TRUE)
 
+#movie interaction 
+interactive_movies = c('The Amazing Spider-Man', 'Titanic')
+interactive_movies_data <- data_movie_scaled %>%filter(title %in% interactive_movies)
+
+data_movie_scaled <- data_movie_scaled %>%filter(!rownames(.) %in% interactive_movies)
+
+## Data choice
+data_movie_scaled <- data_movie_scaled %>%
+  select(-c(X,title,type, tmdb_popularity, tmdb_score)) %>%
+  mutate(age_certification = as.factor(age_certification))
+
+interactive_movies_data <- interactive_movies_data %>%
+  select(-c(X,title,type, tmdb_popularity, tmdb_score)) %>%
+  mutate(age_certification = as.factor(age_certification))
+
+## Train-/Test-Split
+set.seed(1234)
+random <- sample(1:nrow(data_movie_scaled), ceiling(0.8*dim(data_movie_scaled)[1]))
+train_movie <- data_movie_scaled[random,] 
+test_movie <- data_movie_scaled[-random,]
+test_movie = rbind(test_movie,interactive_movies_data)
+
+
+
+
 #load scaled movies dataset with no NAs 
 data_movie_scaled<- read.csv('data_movie_scaled.csv', header = TRUE)
 
 
+## Train-/Test-Split
+set.seed(1234)
+random <- sample(1:nrow(data_movie_scaled), ceiling(0.8*dim(data_movie_scaled)[1]))
+train_movie <- data_movie_scaled[random,] 
+test_movie <- data_movie_scaled[-random,]
+test_movie = rbind(test_movie,interactive_movies_data)
 
 ###SVR without scaling 
 
 ##test-train split 
 set.seed(1234)
 
-data_movie_num_scaled<- data_movie_scaled %>% select(-c("X","title","type"))%>%
+data_movie_num_scaled<- data_movie_scaled %>% select(-c("X","title"))%>%
   mutate(age_certification = as.factor(age_certification))
 
 
@@ -103,3 +134,7 @@ ggplot(plot_data_scaled_best, aes(x = Actual, y = Predicted)) +
   geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") +  # Add a line of perfect prediction
   labs(x = "True IMDb Scores", y = "Predicted IMDb Scores") +
   ggtitle("SVR Predictions vs. True Values for movies")
+
+
+
+

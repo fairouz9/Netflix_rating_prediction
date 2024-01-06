@@ -59,14 +59,19 @@ data_raw = data_raw %>%
   mutate(isNotUS = ifelse(production_countries %in% c("['US']"), 0, 1)) #%>%
   #mutate(age_certification = ifelse(age_certification == '', NA, as.factor(age_certification)))
 
-#why not omit NAs from data raw so we don't have to do it later steps 
+
+
 
 # Dividing our dataset in Movies and TV Shows
 data_mov <- select(data_raw[data_raw$type == "MOVIE", ], -c(seasons))
 data_sho <- data_raw[data_raw$type == "SHOW", ]
 
-#write.csv(data_mov, file = 'data_movie.csv')
-#write.csv(data_sho, file = 'data_show.csv')
+
+#omit NAs from the dataset
+data_mov<- na.omit(data_mov)
+
+write.csv(data_mov, file = 'data_movie.csv')
+write.csv(data_sho, file = 'data_show.csv')
 
 
 # Insert scaling
