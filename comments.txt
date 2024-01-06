@@ -107,3 +107,14 @@ TO DO:
 new remarks:
 -NAs should be removed after we remove unique character features but not before removing tmdb sice in the full study we are studying with and without tmdb
 -in data prep, after mutating data raw, we should omit NAs so that we don't get warnings in plotting 
+
+
+
+January 6,2024
+
+Tasks before sunday:
+
+-everyone add the iteractive movie section in their model
+-finish paper and presentation
+-put graphs for results in respective section instead of results 
+-add your results to table in that section

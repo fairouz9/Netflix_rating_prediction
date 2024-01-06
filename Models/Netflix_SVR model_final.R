@@ -25,28 +25,6 @@ if (user == 'Fairouz'){
 data_raw = read.csv('titles.csv', header = TRUE)
 data_movie = read.csv("data_movie.csv", header=TRUE)
 
-#movie interaction 
-interactive_movies = c('The Amazing Spider-Man', 'Titanic')
-interactive_movies_data <- data_movie_scaled %>%filter(title %in% interactive_movies)
-
-data_movie_scaled <- data_movie_scaled %>%filter(!rownames(.) %in% interactive_movies)
-
-## Data choice
-data_movie_scaled <- data_movie_scaled %>%
-  select(-c(X,title,type, tmdb_popularity, tmdb_score)) %>%
-  mutate(age_certification = as.factor(age_certification))
-
-interactive_movies_data <- interactive_movies_data %>%
-  select(-c(X,title,type, tmdb_popularity, tmdb_score)) %>%
-  mutate(age_certification = as.factor(age_certification))
-
-## Train-/Test-Split
-set.seed(1234)
-random <- sample(1:nrow(data_movie_scaled), ceiling(0.8*dim(data_movie_scaled)[1]))
-train_movie <- data_movie_scaled[random,] 
-test_movie <- data_movie_scaled[-random,]
-test_movie = rbind(test_movie,interactive_movies_data)
-
 
 
 
@@ -54,32 +32,42 @@ test_movie = rbind(test_movie,interactive_movies_data)
 data_movie_scaled<- read.csv('data_movie_scaled.csv', header = TRUE)
 
 
-## Train-/Test-Split
-set.seed(1234)
-random <- sample(1:nrow(data_movie_scaled), ceiling(0.8*dim(data_movie_scaled)[1]))
-train_movie <- data_movie_scaled[random,] 
-test_movie <- data_movie_scaled[-random,]
-test_movie = rbind(test_movie,interactive_movies_data)
+#movie interaction 
+interactive_movies = c('The Amazing Spider-Man', 'Titanic')
+interactive_movies_data <- data_movie_scaled %>%filter(title %in% interactive_movies)
+
+data_movie_scaled <- data_movie_scaled %>%filter(!title %in% interactive_movies)
+
+
+## Data choice
+data_movie_num_scaled <- data_movie_scaled %>%
+  select(-c(X,title,tmdb_popularity, tmdb_score)) %>%
+  mutate(age_certification = as.factor(age_certification))
+
+interactive_movies_data <- interactive_movies_data %>%
+  select(-c(X,title,tmdb_popularity, tmdb_score)) %>%
+  mutate(age_certification = as.factor(age_certification))
+
+
+
 
 ###SVR without scaling 
 
 ##test-train split 
 set.seed(1234)
 
-data_movie_num_scaled<- data_movie_scaled %>% select(-c("X","title"))%>%
-  mutate(age_certification = as.factor(age_certification))
-
 
 random <- sample(1:nrow(data_movie_num_scaled), ceiling(0.8*dim(data_movie_num_scaled)[1]))
 train_movie_scaled <- data_movie_num_scaled[random,] 
 test_movie_scaled <- data_movie_num_scaled[-random,]
+test_movie_scaled <- rbind(test_movie_scaled,interactive_movies_data)
 
 X_train_movie_scaled<- select(train_movie_scaled ,-c(imdb_score))
 y_train_movie_scaled<- train_movie_scaled$imdb_score
 X_test_movie_scaled<- select(test_movie_scaled ,-c(imdb_score))
 y_test_movie_scaled<- test_movie_scaled$imdb_score
 
-dt<-data_movie_scaled[-random,]
+
 
 # Perform grid search using tune (radial kernel is the default one)
 svm_model <- tune(
@@ -120,21 +108,25 @@ SVR_pred_movie_scaled <- predict(best_model, X_test_movie_scaled)
 
 ## Calculate MSE (Mean Squared Error)
 SVR_movie_mse_scaled <- mean((SVR_pred_movie_scaled - y_test_movie_scaled)^2)
-#~0.7881993
+#~0.81857
 
 
 ##visualize 
 
 # Create a data frame with true and predicted values
-plot_data_scaled <- data.frame(Actual = y_test_movie_scaled, Predicted = SVR_pred_movie_scaled_best)
+plot_data_scaled <- data.frame(Actual = y_test_movie_scaled, Predicted = SVR_pred_movie_scaled)
 
 # Scatter plot
-ggplot(plot_data_scaled_best, aes(x = Actual, y = Predicted)) +
+
+ggplot(plot_data_scaled, aes(x = Actual, y = Predicted)) +
   geom_point(color = "blue") +
-  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") +  # Add a line of perfect prediction
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") +
   labs(x = "True IMDb Scores", y = "Predicted IMDb Scores") +
-  ggtitle("SVR Predictions vs. True Values for movies")
+  ggtitle("SVR Predictions vs. True Values for movies") +
+  scale_y_continuous(
+    name = "Predicted IMDb Scores",
+    limits = c(2, max(plot_data_scaled$Predicted)))
 
 
-
+game_SVR_results <- data.frame(movies= interactive_movies, true_imdb_scores= plot_data_scaled[c(640,639),1],SVR_imdb_scores= plot_data_scaled[c(640,639),2]) 
 

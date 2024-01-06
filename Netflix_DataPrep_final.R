@@ -31,7 +31,7 @@ data_raw = read.csv('titles.csv', header = TRUE)
 
 data_raw = data_raw %>%
   # remove redundant id variables
-  select(-c(id,imdb_id, description)) %>% #when we removed tmdb and tmdb popularity, then omit NAs we obtained larger dimension
+  select(-c(id,imdb_id, description)) %>% 
   # remove movies/films with no genre, country and year
   filter(genres !='[]' & production_countries != '[]') %>%
   # transform variables into factors
@@ -282,5 +282,4 @@ corrplot_sho <- corrplot(corr_matrix_sho,
                          tl.cex = 0.4,
                          number.cex = 0.5,
                          tl.col = "black")
-max(data_mov_num$imdb_votes)
-min(data_mov_num$imdb_votes)
+

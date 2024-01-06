@@ -40,8 +40,8 @@ data_show <- na.omit(data_show)
 ##test-train split 
 set.seed(1234)
 
-data_movie_num <- data_movie %>% select(-c("X","title","description","genres","production_countries","type"))
-data_show_num <- data_show %>% select(-c("X","title","description","genres","production_countries","type"))
+data_movie_num <- data_movie %>% select(-c("X","title","genres","production_countries","type"))
+data_show_num <- data_show %>% select(-c("X","title","genres","production_countries","type"))
 
 random <- sample(1:nrow(data_movie_num), ceiling(0.8*dim(data_movie_num)[1]))
 train_movie <- data_movie_num[random,] 
