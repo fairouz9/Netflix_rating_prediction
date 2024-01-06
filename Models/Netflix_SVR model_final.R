@@ -6,6 +6,7 @@ library(cowplot)
 library(glmnet)
 library(gridExtra)
 library(e1071)
+library(caret)
 
 
 
@@ -47,31 +48,58 @@ y_train_movie_scaled<- train_movie_scaled$imdb_score
 X_test_movie_scaled<- select(test_movie_scaled ,-c(imdb_score))
 y_test_movie_scaled<- test_movie_scaled$imdb_score
 
-#test<- data_movie_scaled[-random,]
-###SVR with scaling and without tmdb features 
+dt<-data_movie_scaled[-random,]
+
+# Perform grid search using tune (radial kernel is the default one)
+svm_model <- tune(
+  svm,
+  imdb_score ~ release_year + age_certification + runtime + imdb_votes + 
+    isNotUS + drama + comedy + documentation + horror + crime + 
+    action + thriller + fantasy + romance + history + scifi + 
+    animation + reality + sport + family + music + war + western,
+  data = train_movie_scaled,
+  ranges = list(
+    gamma = c(0.01,0.03,0.05,0.1),
+    cost = 2^(1:3),
+    epsilon = c(0.1,0.2,0.3)
+  )
+)
+
+# Get the best model from the grid search
+best_model <- svm_model$best.model
+
+#best model: 
+#SVM-Type:eps-regression, SVM-Kernel:radial, cost:2,  gamma:0.03, epsilon:0.3
+ 
+#ie best model can be defined as below 
 SVR_movie_scaled <- svm(imdb_score~release_year + age_certification + runtime + imdb_votes + 
-                          isNotUS + drama + comedy + documentation + horror + crime + 
-                          action + thriller + fantasy + romance + history + scifi + 
-                          animation + reality + sport + family + music + war + western, data = train_movie_scaled , kernel = "radial", type = "nu-regression", epsilon = 0.1, cost = 2, gamma = 0.03)
++                           isNotUS + drama + comedy + documentation + horror + crime + 
++                           action + thriller + fantasy + romance + history + scifi + 
++                           animation + reality + sport + family + music + war + western, data = train_movie_scaled , kernel = "radial",
+                            type = "eps-regression", epsilon = 0.3, cost = 2, gamma = 0.03)
 
-SVR_pred_movie_scaled <- predict(SVR_movie_scaled, X_test_movie_scaled)
 
-# Calculate MSE (Mean Squared Error)
 
+# Print the best parameters
+print(best_model)
+
+#predict using best model obtained from grid search 
+SVR_pred_movie_scaled <- predict(best_model, X_test_movie_scaled)
+
+
+## Calculate MSE (Mean Squared Error)
 SVR_movie_mse_scaled <- mean((SVR_pred_movie_scaled - y_test_movie_scaled)^2)
-#~0.789221
+#~0.7881993
 
 
-#visualize 
+##visualize 
 
 # Create a data frame with true and predicted values
-plot_data_scaled <- data.frame(Actual = y_test_movie_scaled, Predicted = SVR_pred_movie_scaled)
+plot_data_scaled <- data.frame(Actual = y_test_movie_scaled, Predicted = SVR_pred_movie_scaled_best)
 
 # Scatter plot
-ggplot(plot_data_scaled, aes(x = Actual, y = Predicted)) +
+ggplot(plot_data_scaled_best, aes(x = Actual, y = Predicted)) +
   geom_point(color = "blue") +
   geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") +  # Add a line of perfect prediction
   labs(x = "True IMDb Scores", y = "Predicted IMDb Scores") +
   ggtitle("SVR Predictions vs. True Values for movies")
-
-

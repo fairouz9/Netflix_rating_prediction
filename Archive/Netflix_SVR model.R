@@ -68,7 +68,7 @@ y_test_show<- test_show$imdb_score
 SVR_movie <- svm(imdb_score~release_year + age_certification + runtime + imdb_votes + 
                    isNotUS + drama + comedy + documentation + horror + crime + 
                    action + thriller + fantasy + romance + history + scifi + 
-                   animation + reality + sport + family + music + war + western, data = train_movie , kernel = "radial", type = "nu-regression", epsilon = 0.1, cost = 2, gamma = 0.03)
+                   animation + reality + sport + family + music + war + western, data = train_movie , kernel = "radial", type = "eps-regression", epsilon = 0.3, cost = 2, gamma = 0.03)
 
 SVR_pred_movie <- predict(SVR_movie, X_test_movie)
 
@@ -96,7 +96,7 @@ ggplot(plot_data, aes(x = Actual, y = Predicted)) +
 SVR_movie2 <- svm(imdb_score~release_year + age_certification + runtime + imdb_votes + tmdb_score + tmdb_popularity +
                    isNotUS + drama + comedy + documentation + horror + crime + 
                    action + thriller + fantasy + romance + history + scifi + 
-                   animation + reality + sport + family + music + war + western, data = train_movie , kernel = "radial", type = "nu-regression", epsilon = 0.1, cost = 2, gamma = 0.03)
+                   animation + reality + sport + family + music + war + western, data = train_movie , kernel = "radial", type = "eps-regression", epsilon = 0.3, cost = 2, gamma = 0.03)
 
 
 SVR_pred_movie2 <- predict(SVR_movie2, X_test_movie)
@@ -126,7 +126,7 @@ ggplot(plot_data2, aes(x = Actual, y = Predicted)) +
 SVR_show <- svm(imdb_score~release_year + age_certification + runtime + imdb_votes + seasons+
                    isNotUS + drama + comedy + documentation + horror + crime + 
                    action + thriller + fantasy + romance + history + scifi + 
-                   animation + reality + sport + family + music + war + western, data = train_show , kernel = "radial", type = "nu-regression", epsilon = 0.1, cost = 2, gamma = 0.03)
+                   animation + reality + sport + family + music + war + western, data = train_show , kernel = "radial", type = "eps-regression", epsilon = 0.3, cost = 2, gamma = 0.03)
 
 SVR_pred_show<- predict(SVR_show, X_test_show)
 
@@ -150,7 +150,7 @@ ggplot(plot_data3, aes(x = Actual, y = Predicted)) +
 SVR_show2 <- svm(imdb_score~release_year + age_certification + runtime + seasons + imdb_votes + tmdb_score + tmdb_popularity +
                     isNotUS + drama + comedy + documentation + horror + crime + 
                     action + thriller + fantasy + romance + history + scifi + 
-                    animation + reality + sport + family + music + war + western, data = train_show , kernel = "radial", type = "nu-regression", epsilon = 0.1, cost = 2, gamma = 0.03)
+                    animation + reality + sport + family + music + war + western, data = train_show , kernel = "radial", type = "eps-regression", epsilon = 0.3, cost = 2, gamma = 0.03)
 
 
 SVR_pred_show2 <- predict(SVR_show2, X_test_show)
@@ -220,7 +220,7 @@ y_test_show_scaled<- test_show_scaled$imdb_score
 SVR_movie_scaled <- svm(imdb_score~release_year + age_certification + runtime + imdb_votes + 
                    isNotUS + drama + comedy + documentation + horror + crime + 
                    action + thriller + fantasy + romance + history + scifi + 
-                   animation + reality + sport + family + music + war + western, data = train_movie_scaled , kernel = "radial", type = "nu-regression", epsilon = 0.1, cost = 2, gamma = 0.03)
+                   animation + reality + sport + family + music + war + western, data = train_movie_scaled , kernel = "radial", type = "eps-regression", epsilon = 0.3, cost = 2, gamma = 0.03)
 
 SVR_pred_movie_scaled <- predict(SVR_movie_scaled, X_test_movie_scaled)
 
@@ -247,7 +247,7 @@ ggplot(plot_data5, aes(x = Actual, y = Predicted)) +
 SVR_movie_scaled2 <- svm(imdb_score~release_year + age_certification + runtime + imdb_votes + tmdb_score + tmdb_popularity +
                     isNotUS + drama + comedy + documentation + horror + crime + 
                     action + thriller + fantasy + romance + history + scifi + 
-                    animation + reality + sport + family + music + war + western, data = train_movie_scaled , kernel = "radial", type = "nu-regression", epsilon = 0.1, cost = 2, gamma = 0.03)
+                    animation + reality + sport + family + music + war + western, data = train_movie_scaled , kernel = "radial", type = "eps-regression", epsilon = 0.3, cost = 2, gamma = 0.03)
 
 
 SVR_pred_movie_scaled2 <- predict(SVR_movie_scaled2, X_test_movie_scaled)
@@ -278,7 +278,7 @@ ggplot(plot_data6, aes(x = Actual, y = Predicted)) +
 SVR_show_scaled <- svm(imdb_score~release_year + age_certification + runtime + imdb_votes + 
                           isNotUS + drama + comedy + documentation + horror + crime + 
                           action + thriller + fantasy + romance + history + scifi + 
-                          animation + reality + sport + family + music + war + western, data = train_show_scaled , kernel = "radial", type = "nu-regression", epsilon = 0.1, cost = 2, gamma = 0.03)
+                          animation + reality + sport + family + music + war + western, data = train_show_scaled , kernel = "radial", type = "eps-regression", epsilon = 0.3, cost = 2, gamma = 0.03)
 
 SVR_pred_show_scaled <- predict(SVR_show_scaled, X_test_show_scaled)
 
@@ -305,7 +305,7 @@ ggplot(plot_data7, aes(x = Actual, y = Predicted)) +
 SVR_show_scaled2 <- svm(imdb_score~release_year + age_certification + runtime + imdb_votes + tmdb_score + tmdb_popularity +
                            isNotUS + drama + comedy + documentation + horror + crime + 
                            action + thriller + fantasy + romance + history + scifi + 
-                           animation + reality + sport + family + music + war + western, data = train_show_scaled , kernel = "radial", type = "nu-regression", epsilon = 0.1, cost = 2, gamma = 0.03)
+                           animation + reality + sport + family + music + war + western, data = train_show_scaled , kernel = "radial", type = "eps-regression", epsilon = 0.3, cost = 2, gamma = 0.03)
 
 
 SVR_pred_show_scaled2 <- predict(SVR_show_scaled2, X_test_show_scaled)
