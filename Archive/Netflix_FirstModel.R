@@ -20,8 +20,9 @@ if (user == 'Theresa'){
   setwd("/home/theresa/Schreibtisch/Theresa/STUDIUM/Master Statistics and Data Science/Padova/Statistical Methods for High-Dim Data/Project/Data")
 }
 
-# data_show= read.csv('data_show.csv', header = TRUE)
 data_movie = read.csv("data_movie.csv", header=TRUE)
+data_movie = na.omit(data_movie)
+data_movie_scaled = read.csv("data_movie_scaled.csv", header=TRUE)
 
 ###### First Model Ideas for movies
 
@@ -119,17 +120,15 @@ random <- sample(1:nrow(data_movie), ceiling(0.8*dim(data_movie)[1]))
 train_movie <- data_movie[random,] 
 test_movie <- data_movie[-random,]
 
-# First Try: with tmdb score
+# First Try: with tmdb score and tmdb popularity
 model_data_movie <- select(train_movie,-c(X,title, type,description, genres,production_countries))
-model_data_movie <- na.omit(model_data_movie)
 x <- model.matrix(~.*., data = select(model_data_movie, -c(imdb_score))) # no need to specify response, '.' means for every variable in the data set
 ridge_model1 <- cv.glmnet(x, na.omit(model_data_movie$imdb_score), alpha = 0)
 plot(ridge_model1)
-summary(ridge_model1$glmnet.fit$beta)
+# summary(ridge_model1$glmnet.fit$beta)
 
 # Make predictions
 data_test_movie <- select(test_movie,-c(X,title, type,description, genres,production_countries))
-data_test_movie <- na.omit(data_test_movie)
 x_test <- model.matrix(~.*., data = select(data_test_movie, -c(imdb_score))) # no need to specify response, '.' means for every variable in the data set
 
 predictions <- predict(ridge_model1, s = 'lambda.min', newx = x_test)
@@ -139,16 +138,14 @@ mse_ridge1 <- mean((predictions - data_test_movie$imdb_score)^2)
 mse_ridge1
 
 # Second Try: without tmdb score
-model_data_movie <- select(train_movie,-c(X,title, type,description, genres,production_countries,tmdb_score))
-model_data_movie <- na.omit(model_data_movie)
+model_data_movie <- select(train_movie,-c(X,title, type,description, genres,production_countries,tmdb_score,tmdb_popularity))
 x <- model.matrix(~.*., data = select(model_data_movie, -c(imdb_score))) # no need to specify response, '.' means for every variable in the data set
 ridge_model2 <- cv.glmnet(x, na.omit(model_data_movie$imdb_score), alpha = 0)
 plot(ridge_model2)
 # summary(ridge_model2$glmnet.fit$beta)
 
 # Make predictions
-data_test_movie <- select(test_movie,-c(X,title, type,description, genres,production_countries, tmdb_score))
-data_test_movie <- na.omit(data_test_movie)
+data_test_movie <- select(test_movie,-c(X,title, type,description, genres,production_countries, tmdb_score, tmdb_popularity))
 x_test <- model.matrix(~.*., data = select(data_test_movie, -c(imdb_score))) # no need to specify response, '.' means for every variable in the data set
 
 predictions <- predict(ridge_model2, s = 'lambda.min', newx = x_test)
@@ -217,15 +214,26 @@ ggplot(plot_data, aes(x = Variable, y = Coefficient, fill = factor(sign(Coeffici
 
 # Now: with scaled data 
 
-data_movie_scaled <- data_movie %>%
-  select(-c(X,title,type,description,genres, production_countries)) %>%
-  mutate(release_year = scale(release_year),
-         runtime = scale(runtime),
-         seasons = scale(seasons),
-         imdb_score = scale(imdb_score),
-         imdb_votes = scale(imdb_votes),
-         tmdb_popularity = scale(tmdb_popularity),
-         tmdb_score = scale(tmdb_score))
+interactive_movies = c('The Amazing Spider-Man', 'Titanic')
+interactive_movies_data <- data_movie_scaled %>%filter(title %in% interactive_movies)
+
+data_movie_scaled <- data_movie_scaled %>%filter(!rownames(.) %in% interactive_movies)
+
+## Data choice
+data_movie_scaled <- data_movie_scaled %>%
+  select(-c(X,title,type)) %>%
+  mutate(age_certification = as.factor(age_certification))
+
+interactive_movies_data <- interactive_movies_data %>%
+  select(-c(X,title,type)) %>%
+  mutate(age_certification = as.factor(age_certification))
+
+## Train-/Test-Split
+set.seed(1234)
+random <- sample(1:nrow(data_movie_scaled), ceiling(0.8*dim(data_movie_scaled)[1]))
+train_movie <- data_movie_scaled[random,] 
+test_movie <- data_movie_scaled[-random,]
+test_movie = rbind(test_movie,interactive_movies_data)
 
 # Ridge Regression - Scaled
 ## Problem with Lasso: genres could be excluded. Solution: Ridge
@@ -237,36 +245,30 @@ train_movie <- data_movie_scaled[random,]
 test_movie <- data_movie_scaled[-random,]
 
 # First Try: with tmdb score
-#model_data_movie <- select(train_movie,-c(X,title, type,description, genres,production_countries))
-model_data_movie <- na.omit(model_data_movie)
-x <- model.matrix(~.*., data = select(model_data_movie, -c(imdb_score))) # no need to specify response, '.' means for every variable in the data set
-ridge_model1_scaled <- cv.glmnet(x, na.omit(model_data_movie$imdb_score), alpha = 0)
-plot(ridge_model1_scaled)
-#summary(ridge_model1_scaled$glmnet.fit$beta)
+x <- model.matrix(~.*., data = select(train_movie, -c(imdb_score))) # no need to specify response, '.' means for every variable in the data set
+ridge_model1_scaled <- cv.glmnet(x, na.omit(train_movie$imdb_score), alpha = 0)
+# plot(ridge_model1_scaled)
+# summary(ridge_model1_scaled$glmnet.fit$beta)
 
 # Make predictions
-#data_test_movie <- select(test_movie,-c(X,title, type,description, genres,production_countries))
-data_test_movie <- na.omit(data_test_movie)
-x_test <- model.matrix(~.*., data = select(data_test_movie, -c(imdb_score))) # no need to specify response, '.' means for every variable in the data set
+x_test <- model.matrix(~.*., data = select(test_movie, -c(imdb_score))) # no need to specify response, '.' means for every variable in the data set
 
 predictions <- predict(ridge_model1_scaled, s = 'lambda.min', newx = x_test)
 
 # Evaluation
-mse_ridge1_scaled <- mean((predictions - data_test_movie$imdb_score)^2)
+mse_ridge1_scaled <- mean((predictions - test_movie$imdb_score)^2)
 mse_ridge1_scaled
 
 
 # Second Try: without tmdb score
-model_data_movie <- select(train_movie,-c(tmdb_score))
-model_data_movie <- na.omit(model_data_movie)
+model_data_movie <- select(train_movie,-c(tmdb_score, tmdb_popularity))
 x <- model.matrix(~.*., data = select(model_data_movie, -c(imdb_score))) # no need to specify response, '.' means for every variable in the data set
 ridge_model2_scaled <- cv.glmnet(x, na.omit(model_data_movie$imdb_score), alpha = 0)
-plot(ridge_model2_scaled)
-#summary(ridge_model2_scaled$glmnet.fit$beta)
+# plot(ridge_model2_scaled)
+# summary(ridge_model2_scaled$glmnet.fit$beta)
 
 # Make predictions
-data_test_movie <- select(test_movie,-c(tmdb_score))
-data_test_movie <- na.omit(data_test_movie)
+data_test_movie <- select(test_movie,-c(tmdb_score, tmdb_popularity))
 x_test <- model.matrix(~.*., data = select(data_test_movie, -c(imdb_score))) # no need to specify response, '.' means for every variable in the data set
 
 predictions <- predict(ridge_model2_scaled, s = 'lambda.min', newx = x_test)

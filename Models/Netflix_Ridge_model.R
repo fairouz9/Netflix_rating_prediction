@@ -73,8 +73,17 @@ par(mfrow = c(1,1))
 ##################### Ridge Regression
 # Problem with Lasso: genres could be excluded. Solution: Ridge
 
+interactive_movies = c('The Amazing Spider-Man', 'Titanic')
+interactive_movies_data <- data_movie_scaled %>%filter(title %in% interactive_movies)
+
+data_movie_scaled <- data_movie_scaled %>%filter(!rownames(.) %in% interactive_movies)
+
 ## Data choice
 data_movie_scaled <- data_movie_scaled %>%
+  select(-c(X,title,type, tmdb_popularity, tmdb_score)) %>%
+  mutate(age_certification = as.factor(age_certification))
+
+interactive_movies_data <- interactive_movies_data %>%
   select(-c(X,title,type, tmdb_popularity, tmdb_score)) %>%
   mutate(age_certification = as.factor(age_certification))
 
@@ -83,7 +92,10 @@ set.seed(1234)
 random <- sample(1:nrow(data_movie_scaled), ceiling(0.8*dim(data_movie_scaled)[1]))
 train_movie <- data_movie_scaled[random,] 
 test_movie <- data_movie_scaled[-random,]
+test_movie = rbind(test_movie,interactive_movies_data)
 
+
+# Modelling
 x <- model.matrix(~.*., data = select(train_movie, -c(imdb_score))) # no need to specify response, '.' means for every variable in the data set
 ridge_model_scaled <- cv.glmnet(x, na.omit(train_movie$imdb_score), alpha = 0)
 plot(ridge_model_scaled)
@@ -109,7 +121,7 @@ limits <- range(c(plot_data$True, plot_data$Predicted))
 ggplot(plot_data, aes(x = True, y = Predicted)) +
   geom_point() +
   geom_abline(intercept = 0, slope = 1, color = "red", linetype = "solid") +
-  labs(title = "Fitted vs. True Values on IMDb Scores - Linear Ridge Regression",
+  labs(title = "Fitted vs. True Values on IMDb Scores - Ridge Regression",
        x = "True Values",
        y = "Fitted Values") +
   theme_minimal() +
@@ -121,6 +133,7 @@ ggplot(plot_data, aes(x = True, y = Predicted)) +
 
 # Save the plot as a PDF file
 ggsave("Plots/Ridge_fitted_vs_true.pdf", width = 8, height = 8)
+ggsave("Plots/Ridge_fitted_vs_true.png", width = 8, height = 8)
 
 ## Plot 15 most important estimated coefficients
 # Extract coefficients for the optimal lambda
@@ -155,6 +168,7 @@ ggplot(plot_data, aes(x = reorder(Variable, Coefficient), y = Coefficient, fill 
 
 
 ggsave('Plots/ridge_top15.pdf', height = 8, width = 10)
+ggsave('Plots/ridge_top15.png', height = 8, width = 10)
 
 ## Data scaling
 data_movie_scaled <- data_movie %>%
@@ -164,13 +178,16 @@ data_movie_scaled <- data_movie %>%
          imdb_votes = scale(imdb_votes)) %>%
   mutate(age_certification = as.factor(age_certification))
 
+interactive_movies_data <- data_movie_scaled %>%filter(title %in% interactive_movies)
+
 ## Compare predictions - table
 test_movie <- data_movie_scaled[-random,]
+test_movie = rbind(test_movie,interactive_movies_data)
 
 test_set = test_movie[,c('title', 'imdb_score')]
 test_set$predictions = predictions
 colnames(test_set) = c('title', 'true imdb_score', 'prediction')
 test_set$diff = abs(test_set$`true imdb_score` - test_set$prediction)
 
-film_selection <- c(12,95,136,359)
-possibleFilms = test_set[film_selection,]
+possibleFilms <- test_set %>%filter(title %in% interactive_movies)
+possibleFilms
