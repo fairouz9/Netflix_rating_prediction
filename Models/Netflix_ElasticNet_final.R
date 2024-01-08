@@ -121,7 +121,7 @@ y_test_scaled <- test_movie_scaled$imdb_score
 ##############################
 
 
-it <- 800
+it <- 700
 n <- 1000
 
 
@@ -140,7 +140,7 @@ for (alpha in sample(0:n, it)){
   # MSE
   mse_en_movie_tmdb[i, 'mse'] <- mean((en_pred_movie_scaled_tmdb - y_test_scaled_tmdb)^2)
   mse_en_movie_tmdb[i, 'alpha'] <- alpha*(1/n)
-  print(i)
+  print(i, 'w/TMDB')
   i <- i + 1
 }
 
@@ -170,7 +170,7 @@ for (alpha in sample(0:n, it)){
   # MSE
   mse_en_movie[i, 'mse'] <- mean((en_pred_movie_scaled - y_test_scaled)^2)
   mse_en_movie[i, 'alpha'] <- alpha*(1/n)
-  print(i)
+  print(c(i, 'noTMDB'))
   i <- i + 1
 }
 
@@ -182,11 +182,11 @@ mse_en_movie_opt <- mse_en_movie[mse_en_movie[, 'mse'] == min(mse_en_movie[, 'ms
 ## Prediction for the best alpha
 
 # With TMDB
-en_mdl_movie_tmdb <- cv.glmnet(x_scaled_tmdb, y_scaled_tmdb, alpha = mse_en_movie_opt_tmdb[,'alpha'])
+en_mdl_movie_tmdb <- cv.glmnet(x_scaled_tmdb, y_scaled_tmdb, alpha = 0.894)#mse_en_movie_opt_tmdb[,'alpha'])
 en_pred_movie_tmdb <- predict(en_mdl_movie_tmdb, s = 'lambda.min', newx = x_test_scaled_tmdb)
 
 # NO TMDB
-en_mdl_movie <- cv.glmnet(x_scaled, y_scaled, alpha = mse_en_movie_opt[,'alpha'])
+en_mdl_movie <- cv.glmnet(x_scaled, y_scaled, alpha = 0.109)#mse_en_movie_opt[,'alpha'])
 en_pred_movie <- predict(en_mdl_movie, s = 'lambda.min', newx = x_test_scaled)
 
 
@@ -204,8 +204,8 @@ ggplot(en_plot_tmdb, aes(x = y_test_scaled, y = en_pred_movie) ) +
        x = "True IMDb Scores",
        y = "Predicted IMDb Scores") + 
   theme(plot.title = element_text(hjust = 0.5)) +
-  ylim(0, 10) +
-  xlim(0, 10)
+  ylim(2, NA) +
+  xlim(2, NA)
 
 
 
@@ -219,11 +219,43 @@ ggplot(en_plot, aes(x = y_test_scaled, y = en_pred_movie) ) +
        x = "True IMDb Scores",
        y = "Predicted IMDb Scores") + 
   theme(plot.title = element_text(hjust = 0.5)) +
-  ylim(0, 10) +
-  xlim(0, 10)
+  ylim(2, NA) +
+  xlim(2, NA)
 
-ggsave("Plots/plot_EN_True_vs_Pred.pdf", width = 8, height = 4)
+ggsave("Plots/plot_EN_True_vs_Pred.pdf", width = 8, height = 8)
   
 
 
+coef_optimal <- coef(en_mdl_movie)
+
+# Find the 15 largest coefficients
+top_coeffs <- data.frame(value = coef_optimal@x,name = coef_optimal@Dimnames[[1]][coef_optimal@i+1])
+top_coeffs <- top_coeffs[-1,]
+top_indices <- order(abs(top_coeffs$value), decreasing = TRUE)[1:15]
+top_variable_names <- top_coeffs$name[top_indices]
+top_coeff_values <- top_coeffs$value[top_indices]
+
+# Create a data frame for plotting
+plot_data <- data.frame(
+  Variable = top_variable_names,
+  Coefficient = top_coeff_values
+)
+
+# Plot the 15 largest coefficients with positive in red and negatives in blue
+ggplot(plot_data, aes(x = reorder(Variable, Coefficient), y = Coefficient, fill = factor(sign(Coefficient)))) +
+  geom_bar(stat = "identity", color = "black") +
+  scale_fill_manual(values = c("blue", "red"), guide = FALSE) +
+  coord_flip() +
+  labs(title = "Top 15 Elastic Net Coefficients",
+       x = "Variable",
+       y = "Coefficient") +
+  theme_minimal() +
+  theme(axis.title.x = element_text(size = 14),  # Adjust the font size for x-axis title
+        axis.title.y = element_text(size = 14),  # Adjust the font size for y-axis title
+        axis.text = element_text(size = 12)) +   # Adjust the font size for axis tick labels
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+
+ggsave('Plots/en_top_15.pdf', height = 8, width = 10)
 
